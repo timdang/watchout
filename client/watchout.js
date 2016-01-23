@@ -1,20 +1,19 @@
 // start slingin' some d3 here.
 
+//Create entities for our game board
 
 var Entity = function(x, y) {
   this.x = x;
   this.y = y;
-  //    this.name = name;
 };
 
-var player = new Entity(375, 225);
-var enemies = [];
+//player element gets created
 var width = 750;
 var height = 450;
+var player = new Entity(width/2, height/2);
+var enemies = [];
 
-//Create entities for our game board
 
-//starting a game
 
 
 /*
@@ -32,40 +31,61 @@ d3.select('body').selectAll('svg')
 
 //initialize method
 var initialization = function() {
-  //player element gets created
+
+
+  var drag = d3.behavior.drag()
+    .on('drag', function() {
+      player.x = d3.event.x;
+      player.y = d3.event.y;
+      playerCircle.attr('cx', d3.event.x);
+      playerCircle.attr('cy', d3.event.y);
+    });
   //append to the game board inital position of center of
 
   //graphical representation of player location
-  d3.select('.gameBoard')
+  var gameBoard = d3.select('.gameBoard')
     .append('svg')
-    .attr('width', '84px')
-    .attr('height', '84px')
-    .style({
-      "top": player.y,
-      "left": player.x
+    .attr('width', width)
+    .attr('height', height);
+
+  var playerCircle = gameBoard
+    .selectAll('.player')
+    .data([player])
+    .enter()
+    .append('svg:circle')
+    .attr('class', 'player')
+    .attr('cx', function(d) {
+      return d.x;
     })
-    .classed('entity', true)
-    .html('<circle cx="42" cy="42" r="40" stroke="black" stroke-width="2" fill="red" />');
-  //controled by mouse movement
+    .attr('cy', function(d) {
+      return d.y;
+    })
+    .attr('r', 40)
+    .call(drag);
+
   //d3.event d3.mouse
 
-  for (var i = 0; i < 5; i++){
+  for (var i = 0; i < 10; i++){
     enemies.push(new Entity(Math.random() * width, Math.random() * height));
   }
 
-  d3.select('.gameBoard')
-    .selectAll('img')
+  var enemyCircles = gameBoard
+    .selectAll('.asteroid')
     .data(enemies)
-    .enter().append('img')
-    .attr('src', 'asteroid.png')
-    .attr('style', function(enemy) {
-      return 'top: ' + enemy.y + 'px; left: ' + enemy.x + 'px';
+    .enter()
+    .append('svg:circle')
+    .attr('class', '.asteroid')
+    .attr('cx', function(d) {
+      return d.x;
     })
-    .classed('entity', true);
+    .attr('cy', function(d) {
+      return d.y;
+    })
+    .attr('r', 10);
 
 };
 
-initialization();
+
 //set interval
 //as time passes
 //additional asteroids are added to the game board
@@ -79,3 +99,6 @@ initialization();
 
 //game ends on 3 collisions
 //update high score
+
+//starting a game
+initialization();
