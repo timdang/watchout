@@ -1,91 +1,112 @@
 // start slingin' some d3 here.
 
 //Create entities for our game board
-
-var Entity = function(x, y) {
-  this.x = x;
-  this.y = y;
-};
-
-//player element gets created
+var score = 0;
+var collisions = 0;
 var width = 750;
 var height = 450;
-var player = new Entity(width/2, height/2);
+var player = new Entity(width / 2, height / 2);
 var enemies = [];
+var gameBoard = d3.select('.gameBoard')
+  .append('svg')
+  .attr('width', width)
+  .attr('height', height);
+var drag = d3.behavior.drag()
+  .on('drag', function() {
+    player.x = d3.event.x;
+    player.y = d3.event.y;
+    playerCircle.attr('cx', d3.event.x);
+    playerCircle.attr('cy', d3.event.y);
+  });
+var playerCircle = gameBoard
+  .selectAll('.player')
+  .data([player])
+  .enter()
+  .append('svg:circle')
+  .attr('class', 'player')
+  .attr('cx', function(d) {
+    return d.x;
+  })
+  .attr('cy', function(d) {
+    return d.y;
+  })
+  .attr('r', 10)
+  .attr('fill', 'red')
+  .call(drag);
 
+function Entity(x, y) {
+  this.x = x;
+  this.y = y;
+}
 
+function collisionDetection() {
+  return function() {
+    var playerX = player.x;
+    var playerY = player.y;
+    var enemyX = d3.select(this).attr('cx');
+    var enemyY = d3.select(this).attr('cy');
+    var distance = Math.sqrt(Math.pow((playerX - enemyX), 2) + Math.pow((playerY - enemyY), 2));
 
+    if (distance <= 10) {
+      if (d3.select(".high span").html() < score) {
+        d3.select(".high span").html(score);
+      }
+      score = 0;
+      collisions++;
+      d3.select(".collisions span").html(collisions);
+    }
+  };
+}
 
-/*
-d3.select('body').selectAll('svg')
-.data([1,2,3,4,5,6,7])
-.enter()
-.append('svg')
-.classed('red', true)
-.attr('width', '100px')
-.attr('height', '100px')
-.html(function(d) {
-  return '<circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red" />';
-});
-*/
-
-//initialize method
-var initialization = function() {
-
-
-  var drag = d3.behavior.drag()
-    .on('drag', function() {
-      player.x = d3.event.x;
-      player.y = d3.event.y;
-      playerCircle.attr('cx', d3.event.x);
-      playerCircle.attr('cy', d3.event.y);
-    });
-  //append to the game board inital position of center of
-
-  //graphical representation of player location
-  var gameBoard = d3.select('.gameBoard')
-    .append('svg')
-    .attr('width', width)
-    .attr('height', height);
-
-  var playerCircle = gameBoard
-    .selectAll('.player')
-    .data([player])
-    .enter()
-    .append('svg:circle')
-    .attr('class', 'player')
-    .attr('cx', function(d) {
-      return d.x;
-    })
-    .attr('cy', function(d) {
-      return d.y;
-    })
-    .attr('r', 40)
-    .call(drag);
-
-  //d3.event d3.mouse
-
-  for (var i = 0; i < 10; i++){
+function makeEnemies(num) {
+  for (var i = 0; i < num; i++) {
     enemies.push(new Entity(Math.random() * width, Math.random() * height));
   }
+}
+makeEnemies(10);
 
-  var enemyCircles = gameBoard
-    .selectAll('.asteroid')
-    .data(enemies)
-    .enter()
-    .append('svg:circle')
-    .attr('class', '.asteroid')
+var enemyCircles = gameBoard
+  .selectAll('.enemy')
+  .data(enemies);
+
+enemyCircles.enter()
+  .append('svg:circle')
+  .attr('class', 'enemy')
+  .attr('cx', function(d) {
+    return d.x;
+  })
+  .attr('cy', function(d) {
+    return d.y;
+  })
+  .attr('r', 10);
+
+function moveEnemies() {
+  enemyCircles
+    .transition()
+    .duration(2000)
+    .tween('collision detection', collisionDetection)
     .attr('cx', function(d) {
-      return d.x;
+      var newLocation = Math.random() * width;
+      d.x = newLocation;
+      return newLocation;
     })
     .attr('cy', function(d) {
-      return d.y;
-    })
-    .attr('r', 10);
+      var newLocation = Math.random() * height;
+      d.y = newLocation;
+      return newLocation;
+    });
+}
 
-};
+setInterval(function() {
+  moveEnemies();
+}, 2000);
+
+setInterval(function() {
+  d3.select(".current span").html(score++);
+}, 50);
 
 
+//testMovement();
 //set interval
 //as time passes
 //additional asteroids are added to the game board
@@ -101,4 +122,3 @@ var initialization = function() {
 //update high score
 
 //starting a game
-initialization();
