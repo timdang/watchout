@@ -1,11 +1,18 @@
 // start slingin' some d3 here.
 
-//Create entities for our game board
+
 var Entity = function(x, y) {
   this.x = x;
   this.y = y;
   //    this.name = name;
 };
+
+var player = new Entity(375, 225);
+var enemies = [];
+var width = 750;
+var height = 450;
+
+//Create entities for our game board
 
 //starting a game
 
@@ -22,13 +29,6 @@ d3.select('body').selectAll('svg')
   return '<circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red" />';
 });
 */
-
-
-
-var player = new Entity(375, 225);
-var enemies = [];
-var width = 750;
-var height = 450;
 
 //initialize method
 var initialization = function() {
