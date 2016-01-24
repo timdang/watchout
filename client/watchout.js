@@ -1,13 +1,17 @@
+var numberOfEnemies = 15;
+var enemySpeed = 2000;
+
 var score = 0;
 var collisions = 0;
-var width = 750; //dynamically set here
-var height = 450; //dynamically set here
+
+var width = window.innerWidth - 50; //dynamically set here
+var height = window.innerHeight - 100; //dynamically set here
 var player = new Entity(width / 2, height / 2);
 var enemies = [];
 var gameBoard = d3.select('.gameBoard')
   .append('svg')
-  .attr('width', width)
-  .attr('height', height);
+  .attr('width', width + "px")
+  .attr('height', height + "px");
 var drag = d3.behavior.drag()
   .on('drag', function() {
     player.x = d3.event.x > width ? width : d3.event.x;
@@ -22,7 +26,7 @@ var playerCircle = gameBoard
   .selectAll('.player')
   .data([player])
   .enter()
-  .append('svg:circle')
+  .append('circle')
   .attr('class', 'player')
   .attr('cx', function(d) {
     return d.x;
@@ -30,7 +34,7 @@ var playerCircle = gameBoard
   .attr('cy', function(d) {
     return d.y;
   })
-  .attr('r', 10)
+  .attr('r', 15)
   .attr('fill', 'red')
   .call(drag);
 
@@ -58,19 +62,18 @@ function collisionDetection() {
   };
 }
 
-function makeEnemies(num) {
+var makeEnemies = function(num) {
   for (var i = 0; i < num; i++) {
     enemies.push(new Entity(Math.random() * width, Math.random() * height));
   }
-}
-makeEnemies(10);
+}(numberOfEnemies);
 
 var enemyCircles = gameBoard
   .selectAll('.enemy')
   .data(enemies);
 
 enemyCircles.enter()
-  .append('svg:circle')
+  .append('circle')
   .attr('class', 'enemy')
   .attr('cx', function(d) {
     return d.x;
@@ -81,10 +84,9 @@ enemyCircles.enter()
   .attr('r', 10)
   .attr('fill', 'lightgrey');
 
-function moveEnemies() {
-  enemyCircles
-    .transition()
-    .duration(2000)
+function moveEnemies(element, duration) {
+  element.transition()
+    .duration(duration)
     .tween('collision detection', collisionDetection)
     .attr('cx', function(d) {
       var newLocation = Math.random() * width;
@@ -95,30 +97,21 @@ function moveEnemies() {
       var newLocation = Math.random() * height;
       d.y = newLocation;
       return newLocation;
+    })
+    //adding a sliight pause between moves
+    .transition()
+    .duration(300)
+    .each('end', function() {
+      moveEnemies(d3.select(this), duration);
     });
 }
 
+//initial game call
+setTimeout(function() {
+  moveEnemies(enemyCircles, enemySpeed);
+}, 1000);
+
+//score tracker
 setInterval(function() {
-  moveEnemies();
-}, 2000);
-setInterval(function() {
-  d3.select(".current span").html(score++);
+  d3.select(".current span").html(score += 100);
 }, 50);
-
-
-//testMovement();
-//set interval
-//as time passes
-//additional asteroids are added to the game board
-//will start small and get larger as they enter game board
-//score increases as time passes
-
-//update both player(x, y) and astroids(x,y)
-//use the objects x y to tell d3 where to place dom elements
-//when player element collides with asteroid, game ends
-//trigger update collisions
-
-//game ends on 3 collisions
-//update high score
-
-//starting a game
